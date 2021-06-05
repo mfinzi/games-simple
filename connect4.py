@@ -233,7 +233,7 @@ class Connect4Game(object):
         #p/(pold+1e-6)
         if self.pold is not None:
             move_quality = p/(1-self.pold+1e-3)# if self.white else (1-p)/(1-pold+1e-3)
-            i = np.digitize(move_quality,[.75,.85,.95,1.0,1.05,1.15,1.3])
+            i = np.digitize(move_quality,[.75,.9,.95,0.99,1.05,1.15,1.3])
             text = trashtalk_bank[i]
             self.text_artist.set_text(f"{text}")#\n (N={self.engine.searchTree.num_visits},p={p:1.2f})
             self.text_artist2.set_text(f"(p={p:1.2f},N={self.engine.searchTree.num_visits},mv={move_quality:.2f})")
