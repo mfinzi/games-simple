@@ -91,6 +91,9 @@ class Connect4Board(object):
     def show(self):
         plt.imshow(self.data())
 
+    def hashkey(self):
+        return self.array
+
 spec = [
     ('p1', int64),
     ('p2', int64),           
@@ -174,19 +177,23 @@ class Connect4BitBoard(object):
     def show(self):
         plt.imshow(self.data())
 
-text_bank = ["You are the reason they\n put instructions on shampoo",
+    def hashkey(self):
+        return (self.p1,self.p2)
+
+trashtalk_bank = ["You are the reason they\n put instructions on shampoo",
 "A CSGO bot would give\n me a better challenge",
 "With moves like that I could\n beat you running on an arduino",
 "And I thought this was\n gonna be a tough game",
 "You think you've got\n what it takes?","Not bad for a Human",
-"How is this possible?",
-"Nooo! I cannot lose!!","RIP"]
+"maybe I underestimated you",
+"Nooo! I cannot lose!!"]
 
 class Connect4Game(object):
     def __init__(self,move_first=True,think_time=1,debug=False):
         self.engine = MCTS(Connect4BitBoard)
         self.think_time = think_time
-        self.fig,self.ax = plt.subplots(1,1,figsize=(4,4))
+        self.white=move_first
+        self.fig,self.ax = plt.subplots(1,1,figsize=(5,5))
         self.ax.grid(which='minor', color='k', linestyle='-', linewidth=2)
         self.ax.set_xticks(np.arange(-.5, 7, 1), minor=True);
         self.ax.set_yticks(np.arange(-.5, 6, 1), minor=True);
@@ -197,7 +204,9 @@ class Connect4Game(object):
         self.text_artist2 = self.ax.text(3,6,"",color='k' if debug else 'white',fontsize=15,ha='center', va='center')
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         plt.show()
+        self.pold=None
         if not move_first: self.engine_move_update()
+        
     def on_click(self,event):
         #plt.text(.5,.5,"arrg")
         if self.ax.in_axes(event):
@@ -207,6 +216,7 @@ class Connect4Game(object):
             #threading.thread(None,self.engine.ponder,args=(10,)).start()
             
     def user_move_update(self,event):
+        self.pold =self.engine.searchTree.win_ratio()
         user_move,j = self.get_click_coords(event)
         outcome = self.engine.make_move(user_move)
         if outcome: self.show_victory(outcome)
@@ -217,21 +227,26 @@ class Connect4Game(object):
         time.sleep(.1)
         
     def engine_move_update(self):
-        pold =self.engine.searchTree.win_ratio()
+        
         engine_move =self.engine.compute_move(self.think_time)
         p =self.engine.searchTree.win_ratio()
         #p/(pold+1e-6)
-        i = np.digitize(p/(pold+1e-2),[.7,.8,.9,1.0,1.1,1.2,1.3])
-        text = text_bank[i]
-        self.text_artist.set_text(f"{text}")#\n (N={self.engine.searchTree.num_visits},p={p:1.2f})
-        self.text_artist2.set_text(f"(p={p:1.2f},N={self.engine.searchTree.num_visits})")
+        if self.pold is not None:
+            move_quality = p/(1-self.pold+1e-3)# if self.white else (1-p)/(1-pold+1e-3)
+            i = np.digitize(move_quality,[.75,.85,.95,1.0,1.05,1.15,1.3])
+            text = trashtalk_bank[i]
+            self.text_artist.set_text(f"{text}")#\n (N={self.engine.searchTree.num_visits},p={p:1.2f})
+            self.text_artist2.set_text(f"(p={p:1.2f},N={self.engine.searchTree.num_visits},mv={move_quality:.2f})")
+        else:
+            self.text_artist.set_text(f"good luck human")
+        
+        #self.text_artist2.set_text(f"(p={p:1.2f},N={self.engine.searchTree.num_visits},T={self.engine.searchTree.reused})")
         outcome = self.engine.make_move(engine_move)
         if outcome: self.show_victory(outcome)
         self.ppt.set_data(self.engine.gameBoard.data())
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
         time.sleep(.1)
-        #self.text_artist.set_text("{:1.2f}".format(self.engine.searchTree.win_ratio()))
         
             
     def show_victory(self,outcome):

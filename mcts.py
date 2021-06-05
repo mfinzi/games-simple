@@ -5,12 +5,11 @@ import math
 from math import sqrt
 
 def hashkey(board):
-    return (board.p1,board.p2)#hash(board.array.tostring())
+    key = board.hashkey()
+    return key if isinstance(key,tuple) else key.tostring()
+    #return (board.p1,board.p2)#hash(board.array.tostring())
 class SearchNode(object):
     
-    # num_rollouts = 0
-    # sqrtlog_num_rollouts = 0
-    # temperature = 1
     transposition_table = {}
     reused=0
     #sqrtlogN = 0
@@ -19,13 +18,6 @@ class SearchNode(object):
         #cls.sqrtlogN =0
         cls.transposition_table = {}
         cls.reused=0
-    # @classmethod
-    # def reset(cls):
-    #     cls.num_rollouts = 0
-    #     cls.sqrtlog_num_rollouts = 0
-    #     cls.temperature = .5
-    #     cls.transposition_table = {}
-    #     cls.reused=0
         
     __slots__ = ('moves','children','unvisited','num_visits','num_wins','sqrtlogN')
     def __init__(self): #move, number of visits, wins
@@ -47,10 +39,9 @@ class SearchNode(object):
             if outcome: return outcome
             
     def win_ratio(self):
-        if self.num_visits==0: return 0.5
+        if self.num_visits==0: return None
         win_rate = self.num_wins/self.num_visits
-        #explore_bonus = Node.sqrtlog_num_rollouts/math.sqrt(self.num_visits)
-        return win_rate# - explore_bonus
+        return win_rate
     
     def best_child_id(self,final=False):
         # fix final
@@ -142,11 +133,6 @@ class MCTS(object):
             
     
     def compute_move(self,think_time):
-#         start_time = time.time()
-#         new_board = Connect4Board()
-#         while time.time() - start_time < think_time:
-#             new_board.copy(self.gameBoard)
-#             self.searchTree.update_path(new_board)
         self.ponder(think_time)
         m = self.searchTree.best_child_id(True)
         return self.searchTree.moves[m]
