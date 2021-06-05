@@ -1,7 +1,8 @@
 name: games
 channels:
-  - soumith
+  - conda-forge
   - defaults
+  - conda-forge/label/broken
 dependencies:
   - _libgcc_mutex=0.1=main
   - argon2-cffi=20.1.0=py39h27cfd23_1
