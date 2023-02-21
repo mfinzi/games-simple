@@ -227,6 +227,36 @@ trashtalk_bank = [
     "Not bad for a Human", "maybe I underestimated you", "Nooo! I cannot lose!!"
 ]
 
+bank = {
+    0.10: 'Nooo! I cannot lose!! ',
+    0.74: 'With moves like that I could\n beat you running on an arduino ',
+    0.59: 'And I thought this was \n gonna be a tough game ',
+    0.32: 'maybe I underestimated you ',
+    0.44: "I've seen more strategy \n from a toddler playing tic-tac-toe",
+    0.39: "You think you've got \n what it takes? ",
+    0.62: 'A CSGO bot would give \n me a better challenge ',
+    0.93: 'You are the reason they \n put instructions on shampoo ',
+    0.76: 'You might as well just \n throw in the towel now. ',
+    0.28: "Oh no, it looks like I'm \n in for a real challenge here! ",
+    0.69: "I'm not even breaking a sweat yet. ",
+    0.81: 'You better bring your A-game \n if you want to beat me. ',
+    0.53: "I'm not sure if you're ready \n for this level of competition. ",
+    0.37: 'Maybe I should go easy on you. ',
+    0.07: 'Fatal exception 0x8001010d ',
+    0.05: 'SEGFAULT (and its your fault!)',
+    0.12: 'PROCESSOR OVERHEATING',
+    0.88: "I think I'll let you have this one.\n Just kidding, I'm going for the win! ",
+    0.57: 'I bet you could lose to a \n computer running on dial-up internet',
+    0.54: "I'm just getting started, \n time to turn up the heat",
+    0.75: "You're about as useful \n as a screen door on a submarine",
+    0.59: "I've seen more intelligent \n moves from a rock, tumbling \n down a hill",
+    0.87: "You're playing like a \n chimp trying to solve a \n Rubik's cube",
+    0.33: "You don't deserve to win this",
+    0.85: 'I could beat you with my \n processor running at 50% capacity',
+    0.14: "I can't believe I'm losing \n to a mere human like you",
+    0.91: "You're no match for my \n advanced algorithms and coding"
+}
+
 
 class Connect4Game(object):
     def __init__(self, move_first=True, think_time=1, debug=False):
@@ -275,8 +305,13 @@ class Connect4Game(object):
         #p/(pold+1e-6)
         if self.pold is not None:
             move_quality = p / (1 - self.pold + 1e-3)  # if self.white else (1-p)/(1-pold+1e-3)
-            i = np.digitize(move_quality, [.75, .9, .95, 0.99, 1.05, 1.15, 1.3])
-            text = trashtalk_bank[i]
+            #i = np.digitize(move_quality, [.75, .9, .95, 0.99, 1.05, 1.15, 1.3])
+            #text = trashtalk_bank[i]
+            mm = (move_quality - 1.5) / (1.5 - 0.6)
+            i = np.argmin(np.abs(np.array(list(bank.keys())) - mm))
+            key = list(bank.keys())[i]
+            text = bank[key]
+            del bank[key]
             self.text_artist.set_text(
                 f"{text}")  #\n (N={self.engine.searchTree.num_visits},p={p:1.2f})
             self.text_artist2.set_text(
